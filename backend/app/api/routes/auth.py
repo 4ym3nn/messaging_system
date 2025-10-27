@@ -11,15 +11,16 @@ async def register(user: UserRegister):
         pool = get_pool()
         async with pool.connection() as conn:
             async with conn.cursor() as cur:
-                # Check if user exists
                 await cur.execute("SELECT id FROM users WHERE email = %s", (user.email,))
                 if await cur.fetchone():
                     raise HTTPException(status_code=400, detail="Email already registered")
+                await cur.execute("SELECT id FROM users WHERE username = %s", (user.username,))
+                if await cur.fetchone():
+                    raise HTTPException(status_code=400, detail="Username already registered")
 
-                # Hash password
+
                 password_hash = hash_password(user.password)
 
-                # Create user
                 await cur.execute(
                     "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s) RETURNING id",
                     (user.username, user.email, password_hash)
@@ -28,7 +29,7 @@ async def register(user: UserRegister):
                 await conn.commit()
 
                 token = create_access_token(str(user_id))
-                return {"access_token": token, "token_type": "bearer"}
+                return {"access_token": token, "token_type": "bearer","user_id":user_id}
     except HTTPException:
         raise
     except Exception as e:
@@ -43,7 +44,7 @@ async def login(user: UserLogin):
                 password_hash = hash_password(user.password)
 
                 await cur.execute(
-                    "SELECT id FROM users WHERE email = %s AND password_hash = %s",
+                    "SELECT id FROM users WHERE email = %s AND password_hash = %s RETURNING id",
                     (user.email, password_hash)
                 )
                 result = await cur.fetchone()
@@ -52,7 +53,7 @@ async def login(user: UserLogin):
 
                 user_id = result[0]
                 token = create_access_token(str(user_id))
-                return {"access_token": token, "token_type": "bearer"}
+                return {"access_token": token, "token_type": "bearer","user_id":user_id}
     except HTTPException:
         raise
     except Exception as e:
