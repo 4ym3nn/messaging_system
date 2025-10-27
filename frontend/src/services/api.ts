@@ -32,7 +32,6 @@ class ChatAPI {
     }
   }
 
-  // Auth endpoints
   async register(username: string, email: string, password: string) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
@@ -43,6 +42,7 @@ class ChatAPI {
     const data = await response.json()
     this.token = data.access_token
     localStorage.setItem("token", data.access_token)
+    localStorage.setItem("user_id",data.user_id);
     return data
   }
 
@@ -56,6 +56,7 @@ class ChatAPI {
     const data = await response.json()
     this.token = data.access_token
     localStorage.setItem("token", data.access_token)
+    localStorage.setItem("user_id",data.user_id);
     return data
   }
 
@@ -64,7 +65,6 @@ class ChatAPI {
     localStorage.removeItem("token")
   }
 
-  // User endpoints
   async getCurrentUser(): Promise<User> {
     const response = await fetch(`${API_BASE_URL}/users/me`, {
       headers: this.getHeaders(),
@@ -73,7 +73,6 @@ class ChatAPI {
     return response.json()
   }
 
-  // Conversation endpoints
   async getConversations(): Promise<Conversation[]> {
     const response = await fetch(`${API_BASE_URL}/conversations`, {
       headers: this.getHeaders(),
@@ -90,11 +89,11 @@ class ChatAPI {
     return response.json()
   }
 
-  async createConversation(name: string, memberIds: string[]): Promise<Conversation> {
+  async createConversation(name: string,is_group=true, memberIds: string[]): Promise<Conversation> {
     const response = await fetch(`${API_BASE_URL}/conversations`, {
       method: "POST",
       headers: this.getHeaders(),
-      body: JSON.stringify({ name, member_ids: memberIds }),
+      body: JSON.stringify({ name,is_group, member_ids: memberIds }),
     })
     if (!response.ok) throw new Error("Failed to create conversation")
     return response.json()
@@ -107,6 +106,14 @@ class ChatAPI {
     if (!response.ok) throw new Error("Failed to fetch messages")
     return response.json()
   }
+  async getUsers(): Promise<User[]> {
+    const response = await fetch(`${API_BASE_URL}/users/`, {
+      headers: this.getHeaders(),
+    })
+    if (!response.ok) throw new Error("Failed to fetch messages")
+    return response.json()
+  }
+
 
   async sendMessage(conversationId: string, content: string): Promise<Message> {
     const response = await fetch(`${API_BASE_URL}/conversations/${conversationId}/messages`, {
@@ -119,7 +126,8 @@ class ChatAPI {
   }
 
   connectWebSocket(conversationId: string, onMessage: (message: Message) => void) {
-    const wsUrl = `ws://localhost:8000/ws/${conversationId}?token=${this.token}`
+    const userId = localStorage.getItem('user_id');
+    const wsUrl = `ws://localhost:8000/ws/${conversationId}/${userId}?token=${this.token}`
     const ws = new WebSocket(wsUrl)
 
     ws.onmessage = (event) => {
