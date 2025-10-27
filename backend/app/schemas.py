@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
-# User Schemas
 class UserRegister(BaseModel):
     username: str
     email: str
@@ -19,18 +18,19 @@ class UserResponse(BaseModel):
     avatar_url: str | None
     status: str
 
-# Message Schemas
 class MessageCreate(BaseModel):
     content: str
-
 class MessageResponse(BaseModel):
     id: str
     conversation_id: str
     sender_id: str
     content: str
     created_at: datetime
+class ConversationCreate(BaseModel):
+    name : str;
+    is_group: bool;
+    member_ids : List[str];
 
-# Conversation Schemas
 class ConversationResponse(BaseModel):
     id: str
     name: str | None
