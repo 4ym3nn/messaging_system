@@ -13,7 +13,6 @@ async def websocket_endpoint(websocket: WebSocket, conversation_id: str, user_id
             data = await websocket.receive_text()
             message_data = json.loads(data)
 
-            # Save message to database
             try:
                 pool = get_pool()
                 async with pool.connection() as conn:
@@ -28,7 +27,6 @@ async def websocket_endpoint(websocket: WebSocket, conversation_id: str, user_id
                         msg_id, created_at = result
                         await conn.commit()
 
-                        # Broadcast to all connected clients
                         broadcast_data = {
                             "type": "message",
                             "id": str(msg_id),
