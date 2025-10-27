@@ -39,7 +39,6 @@ const handleAuth = async () => {
       </div>
 
       <div class="space-y-6">
-        <!-- Username field (only for registration) -->
         <div v-if="!isLogin">
           <input
             v-model="username"
@@ -49,7 +48,6 @@ const handleAuth = async () => {
           />
         </div>
 
-        <!-- Email field -->
         <div>
           <input
             v-model="email"
@@ -59,7 +57,6 @@ const handleAuth = async () => {
           />
         </div>
 
-        <!-- Password field -->
         <div>
           <input
             v-model="password"
@@ -69,12 +66,10 @@ const handleAuth = async () => {
           />
         </div>
 
-        <!-- Error message -->
         <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-xl text-base">
           {{ error }}
         </div>
 
-        <!-- Submit button -->
         <button
           @click="handleAuth"
           :disabled="loading"
@@ -83,7 +78,6 @@ const handleAuth = async () => {
           {{ loading ? 'Loading...' : (isLogin ? 'Login' : 'Register') }}
         </button>
 
-        <!-- Toggle between login/register -->
         <div class="text-center pt-4">
           <button
             @click="isLogin = !isLogin"
