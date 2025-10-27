@@ -8,10 +8,8 @@ from app.api.routes import auth, users, conversations, messages, websocket
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     await init_db_pool()
     yield
-    # Shutdown
     await close_db_pool()
 
 app = FastAPI(title="Real-Time Chat API", lifespan=lifespan)
@@ -24,7 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(conversations.router, prefix="/api/conversations", tags=["Conversations"])
