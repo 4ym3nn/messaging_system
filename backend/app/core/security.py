@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from app.core.config import settings
-
+import bcrypt
 security = HTTPBearer()
 def create_access_token(user_id: str, expires_delta: timedelta | None = None):
     if expires_delta is None:
@@ -26,5 +26,5 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def hash_password(password: str) -> str:
-    # In production, use bcrypt
-    return hashlib.sha256(password.encode()).hexdigest()
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode(),salt)
