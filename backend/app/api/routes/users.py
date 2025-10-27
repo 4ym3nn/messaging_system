@@ -3,7 +3,10 @@ from typing import List
 from app.schemas import UserResponse
 from app.core.security import verify_token
 from app.core.database import get_pool
+import logging
 
+# Get a logger instance, typically named after the module
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get("/me", response_model=UserResponse)
@@ -12,11 +15,14 @@ async def get_current_user(user_id: str = Depends(verify_token)):
         pool = get_pool()
         async with pool.connection() as conn:
             async with conn.cursor() as cur:
+                logger.info('before');
                 await cur.execute(
                     "SELECT id, username, email, avatar_url, status FROM users WHERE id = %s",
                     (user_id,)
                 )
                 row = await cur.fetchone()
+                logger.info(row);
+                logger.info('finished');
                 if not row:
                     raise HTTPException(status_code=404, detail="User not found")
                 return {
@@ -42,6 +48,8 @@ async def get_all_users(user_id: str = Depends(verify_token)):
                     (user_id,)
                 )
                 rows = await cur.fetchall()
+                logger.info('check');
+                logger.info(rows);
                 return [
                     {
                         "id": str(row[0]),
