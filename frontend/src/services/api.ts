@@ -136,7 +136,7 @@ class ChatAPI {
     }
 
     ws.onerror = (error) => {
-      console.error("[v0] WebSocket error:", error)
+      console.error(" WebSocket error:", error)
     }
 
     return ws

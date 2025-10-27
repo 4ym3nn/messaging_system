@@ -18,7 +18,7 @@ onMounted(async () => {
       isAuthenticated.value = true
       await refreshConversations()
     } catch (error) {
-      console.error('[v0] Failed to load user:', error)
+      console.error(' Failed to load user:', error)
       localStorage.removeItem('token')
     }
   }
@@ -30,7 +30,7 @@ const handleAuthenticated = async () => {
     isAuthenticated.value = true
     await refreshConversations()
   } catch (error) {
-    console.error('[v0] Failed to load user:', error)
+    console.error(' Failed to load user:', error)
   }
 }
 
@@ -38,7 +38,7 @@ const refreshConversations = async () => {
   try {
     conversations.value = await chatAPI.getConversations()
   } catch (error) {
-    console.error('[v0] Failed to load conversations:', error)
+    console.error(' Failed to load conversations:', error)
   }
 }
 
@@ -56,7 +56,7 @@ const handleConversationCreated = async (newConversation) => {
       selectedConversation.value = newConversation
     }
   } catch (error) {
-    console.error('[v0] Failed to refresh conversations:', error)
+    console.error(' Failed to refresh conversations:', error)
     conversations.value.push(newConversation)
     selectedConversation.value = newConversation
   }

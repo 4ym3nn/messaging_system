@@ -25,7 +25,7 @@ watch(() => props.conversation?.id, async (newConvId) => {
     await nextTick()
     scrollToBottom()
   } catch (error) {
-    console.error('[v0] Failed to fetch messages:', error)
+    console.error(' Failed to fetch messages:', error)
   }
 
   ws = chatAPI.connectWebSocket(newConvId, (message) => {
