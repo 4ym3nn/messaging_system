@@ -18,10 +18,8 @@ let ws = null
 watch(() => props.conversation?.id, async (newConvId) => {
   if (!newConvId) return
 
-  // Close previous WebSocket connection
   if (ws) ws.close()
 
-  // Fetch messages
   try {
     messages.value = await chatAPI.getMessages(newConvId)
     await nextTick()
@@ -37,18 +35,19 @@ watch(() => props.conversation?.id, async (newConvId) => {
 })
 
 const sendMessage = async (content) => {
-  if (!props.conversation) return
+    if (!props.conversation || !ws) {
+        console.log('fix hanlde ',ws);
+        return
+    }
 
-  try {
-    const message = await chatAPI.sendMessage(props.conversation.id, content)
-    messages.value.push(message)
-    await nextTick()
-    scrollToBottom()
-    emit('message-sent')
-  } catch (error) {
-    console.error('[v0] Failed to send message:', error)
+  const messagePayload = {
+    conversation_id: props.conversation.id,
+    sender_id: props.currentUserId,
+    content
   }
-}
+
+  ws.send(JSON.stringify(messagePayload))
+  }
 
 const scrollToBottom = () => {
   if (messagesContainer.value) {
@@ -65,7 +64,6 @@ const formatTime = (dateString) => {
   <div class="flex-1 flex flex-col bg-white">
     <ChatHeader :conversation="conversation" />
 
-    <!-- Messages -->
     <div v-if="conversation" class="flex-1 overflow-y-auto p-8 space-y-4" ref="messagesContainer">
       <div
         v-for="message in messages"
@@ -92,7 +90,6 @@ const formatTime = (dateString) => {
       </div>
     </div>
 
-    <!-- Empty State -->
     <div v-else class="flex-1 flex items-center justify-center">
       <div class="text-center">
         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,7 +99,6 @@ const formatTime = (dateString) => {
       </div>
     </div>
 
-    <!-- Message Input -->
     <MessageInput v-if="conversation" @send-message="sendMessage" />
   </div>
 </template>
