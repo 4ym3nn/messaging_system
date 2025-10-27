@@ -45,7 +45,22 @@ const refreshConversations = async () => {
 const selectConversation = (conversation) => {
   selectedConversation.value = conversation
 }
-
+const handleConversationCreated = async (newConversation) => {
+  try {
+    await refreshConversations()
+    const conversation = conversations.value.find(c => c.id === newConversation.id)
+    if (conversation) {
+      selectedConversation.value = conversation
+    } else {
+      conversations.value.push(newConversation)
+      selectedConversation.value = newConversation
+    }
+  } catch (error) {
+    console.error('[v0] Failed to refresh conversations:', error)
+    conversations.value.push(newConversation)
+    selectedConversation.value = newConversation
+  }
+}
 const handleLogout = () => {
   isAuthenticated.value = false
   currentUser.value = null
@@ -63,6 +78,7 @@ const handleLogout = () => {
           :selected-conversation="selectedConversation"
           @select-conversation="selectConversation"
           @logout="handleLogout"
+        @conversation-created="handleConversationCreated"
         />
       </div>
 
