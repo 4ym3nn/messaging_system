@@ -1,19 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from app.schemas import ConversationResponse
+from app.schemas import ConversationResponse,ConversationCreate
 from app.core.security import verify_token
 from app.core.database import get_pool
 
 router = APIRouter()
 
 @router.post("")
-async def create_conversation(user_id: str = Depends(verify_token)):
+async def create_conversation(body:ConversationCreate,user_id: str = Depends(verify_token)):
     try:
         pool = get_pool()
         async with pool.connection() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO conversations (is_group) VALUES (FALSE) RETURNING id",
+                    "INSERT INTO conversations (is_group,name) VALUES (%s,%s) RETURNING id",
+                    (body.is_group,body.name)
                 )
                 conv_id = (await cur.fetchone())[0]
 
@@ -21,6 +22,19 @@ async def create_conversation(user_id: str = Depends(verify_token)):
                     "INSERT INTO conversation_members (conversation_id, user_id) VALUES (%s, %s)",
                     (conv_id, user_id)
                 )
+                if body.is_group :
+                    for member_id in body.member_ids:
+                        await cur.execute(
+                            "INSERT INTO conversation_members (conversation_id, user_id) VALUES (%s, %s)",
+                            (conv_id, member_id)
+                        )
+                else :
+                    await cur.execute(
+                        "INSERT INTO conversation_members (conversation_id, user_id) VALUES (%s, %s)",
+                        (conv_id, body.member_ids[0])
+                    )
+
+
                 await conn.commit()
 
                 return {"id": str(conv_id), "is_group": False}
@@ -49,11 +63,11 @@ async def get_conversations(user_id: str = Depends(verify_token)):
         async with pool.connection() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("""
-                    SELECT DISTINCT c.id, c.name, c.is_group
+                    SELECT DISTINCT ON (c.id) c.id, c.name, c.is_group
                     FROM conversations c
                     JOIN conversation_members cm ON c.id = cm.conversation_id
                     WHERE cm.user_id = %s
-                    ORDER BY c.updated_at DESC
+                    ORDER BY c.id, c.updated_at DESC
                 """, (user_id,))
 
                 conversations = []
