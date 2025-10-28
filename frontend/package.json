@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite",
+    "build": "npm run  build",
+    "dev": "npm run dev",
     "lint": "eslint .",
     "preview": "vite preview"
   },
